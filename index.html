@@ -5,17 +5,22 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>我的任务板</title>
     <style>
-        body { 主体 { 
-            font-family: sans-serif; 
-            background-color: #f5f5f5; 背景颜色: #f5f5f5;
-            padding: 20px; 内边距: 20px; 
+        body {
+            font-family: sans-serif;
+            background-color: #f5f5f5;
+            padding: 20px;
+            margin: 0;
         }
-        .task-card {         .任务卡片 { 
-            background: white; 
-            padding: 15px; 
-            margin-bottom: 10px; 
-            border-radius: 8px; 
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1); 
+        h2 {
+            text-align: center;
+            color: #333;
+        }
+        .task-card {
+            background: white;
+            padding: 15px;
+            margin-bottom: 10px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
         }
         h3 { margin-top: 0; color: #333; }
         p { color: #666; }
@@ -32,17 +37,17 @@
         // 这里填入你的 tasks.json 的 Raw 链接
         const DATA_URL = 'https://raw.githubusercontent.com/jtnvxff445/My-box/main/tasks.json';
 
-        async function loadTasks() {异步 函数 加载任务() {
-            try尝试 {尝试 {
-                const response = await fetch(DATA_URL);常量 响应 = 等待 获取(数据URL);
+        async function loadTasks() {
+            try {
+                const response = await fetch(DATA_URL);
                 const tasks = await response.json();
                 
                 const app = document.getElementById('app');
                 app.innerHTML = ''; // 清空加载提示
 
-                if (tasks.length === 0) {如果 (tasks.length === 0) {
+                if (tasks.length === 0) {
                     app.innerHTML = '<p style="text-align:center">暂无任务</p>';
-                    return;返回;
+                    return;
                 }
 
                 tasks.forEach(task => {
