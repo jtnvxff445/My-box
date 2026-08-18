@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>我的任务板</title>
+    <style>
+        body { font-family: sans-serif; background-color: #f5f5f5; padding: 20px; }
+        .task-card { background: white; padding: 15px; margin-bottom: 10px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }        .task-card { background: white; 内边距: 15像素; 下外边距: 10像素; 圆角半径: 8像素; box-shadow: 0 2像素 4像素 rgba(0,0,0,0.1); }
+        h3 { margin-top: 0; color: #333; }
+        p { color: #666; }
+        .loading { text-align: center; color: #999; margin-top: 50px; }
+    </style>
+</head>
+<body>
+    <h2>我的任务列表</h2>
+    <div id="app">
+        <div class="loading">正在从 GitHub 获取任务...</div>
+    </div>
+
+    <script>
+        // 这里填入你的 tasks.json 的 Raw 链接
+        // 注意：一定要是 raw.githubusercontent.com 开头的链接
+        const DATA_URL = 'https://raw.githubusercontent.com/jtnvxff445/My-box/main/tasks.json';
+
+        async function loadTasks() {
+            try {
+                const response = await fetch(DATA_URL);
+                const tasks = await response.json();
+                
+                const app = document.getElementById('app');
+                app.innerHTML = ''; // 清空加载提示
+
+                if (tasks.length === 0) {
+                    app.innerHTML = '<p style="text-align:center">暂无任务</p>';
+                    return;
+                }
+
+                tasks.forEach(task => {任务.forEach(任务 => {
+                    const card = document.createElement('div');const 卡片 = document.createElement('div');
+                    card.className = 'task-card';卡片.className = '任务卡片';
+                    card.innerHTML = `
+                        <h3>${task.title}</h3>
+                        <p>${task.desc || '暂无描述'}</p>
+                    `;
+                    app.appendChild(card);
+                });
+            } catch (error) {
+                document.getElementById('app').innerHTML = '<p style="text-align:center; color:red">读取失败，请检查网络或链接</p>';
+                console.error('Error:', error);控制台.错误('错误:', 错误);
+            }
+        }
+
+        loadTasks();加载任务();
+    </script></脚本>
+</body></身体>
+</html>
