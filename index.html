@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>任务中心</title>
+<style>
+    body{margin:0;padding:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;background:#f5f5f5;color:#333;padding-bottom:60px;transition:background .3s,color .3s}
+    body.dark-mode{background:#1a1a1a;color:#e0e0e0}
+    .header{background:#fff;height:50px;display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:bold;box-shadow:0 1px 3px rgba(0,0,0,.1);position:sticky;top:0;z-index:100;transition:background .3s,box-shadow .3s}
+    body.dark-mode .header{background:#2c2c2c;box-shadow:0 1px 3px rgba(0,0,0,.5);color:#e0e0e0}
+    .container{padding:15px}
+    .card{background:#fff;border-radius:12px;padding:20px;margin-bottom:15px;box-shadow:0 2px 8px rgba(0,0,0,.05);transition:background .3s,box-shadow .3s}
+    body.dark-mode .card{background:#2c2c2c;box-shadow:0 2px 8px rgba(0,0,0,.5)}
+    .card-title{font-size:18px;font-weight:bold;margin-bottom:10px;color:#2c3e50;transition:color .3s}
+    body.dark-mode .card-title{color:#e0e0e0}
+    .card-desc{font-size:14px;color:#666;line-height:1.5;transition:color .3s}
+    body.dark-mode .card-desc{color:#aaa}
+    .bottom-nav{position:fixed;bottom:0;left:0;width:100%;height:60px;background:#fff;border-top:1px solid #eee;display:flex;justify-content:space-around;align-items:center;z-index:100;transition:background .3s,border-color .3s}
+    body.dark-mode .bottom-nav{background:#2c2c2c;border-color:#444}
+    .nav-item{text-align:center;font-size:12px;color:#999;flex:1;padding-top:5px;cursor:pointer;transition:color .3s}
+    body.dark-mode .nav-item{color:#777}
+    .nav-item.active{color:#007aff;font-weight:bold}
+    #page-mine,#page-msg,#page-about,#page-login{display:none;text-align:center;padding-top:50px}
+    .user-name{font-size:20px;font-weight:bold;margin-bottom:5px}
+    .menu-list{margin-top:30px;text-align:left}
+    .menu-item{background:#fff;padding:15px 20px;border-bottom:1px solid #f0f0f0;display:flex;justify-content:space-between;align-items:center;cursor:pointer;transition:background .2s}
+    body.dark-mode .menu-item{background:#2c2c2c;border-color:#444}
+    .menu-item:active{background:#f0f0f0}
+    body.dark-mode .menu-item:active{background:#3a3a3a}
+    .menu-item:first-child{border-top-left-radius:10px;border-top-right-radius:10px}
+    .menu-item:last-child{border-bottom-left-radius:10px;border-bottom-right-radius:10px;border-bottom:none}
+    .switch{position:relative;display:inline-block;width:50px;height:26px}
+    .switch input{opacity:0;width:0;height:0}
+    .slider{position:absolute;cursor:pointer;top:0;left:0;right:0;bottom:0;background:#ccc;transition:.4s;border-radius:34px}
+    .slider:before{position:absolute;content:"";height:20px;width:20px;left:3px;bottom:3px;background:#fff;transition:.4s;border-radius:50%}
+    input:checked+.slider{background:#007aff}
+    input:checked+.slider:before{transform:translateX(24px)}
+    .login-input{width:80%;padding:12px;border:1px solid #ddd;border-radius:8px;font-size:16px;margin-bottom:15px;outline:none;transition:border-color .3s,background .3s,color .3s}
+    body.dark-mode .login-input{background:#2c2c2c;border-color:#444;color:#e0e0e0}
+    .login-btn{width:80%;padding:12px;background:#007aff;color:#fff;border:none;border-radius:8px;font-size:16px;cursor:pointer;transition:background .3s}
+    .login-btn:active{background:#005ecb}
+</style>
+</head>
+<body>
+<div class="header" id="header-title">我的任务列表</div>
+
+<!-- 登录/设置用户名页面 -->
+<div id="page-login" class="container">
+    <div class="user-name">欢迎使用</div>
+    <div style="font-size:14px;color:#888;margin-bottom:30px;">请设置您的用户名和ID</div>
+    <input type="text" id="username-input" class="login-input" placeholder="请输入用户名">
+    <input type="text" id="userid-input" class="login-input" placeholder="请输入ID">
+    <button class="login-btn" onclick="saveUserInfo()">确认保存</button>
+</div>
+
+<!-- 首页：任务列表 -->
+<div id="page-home" class="container">
+    <div style="text-align:center;color:#999;margin-top:30px;">正在从服务器拉取任务...</div>
+</div>
+
+<!-- 个人中心 -->
+<div id="page-mine" class="container">
+    <div class="user-name" id="display-username"></div>
+    <div style="font-size:14px;color:#888;margin-bottom:30px;" id="display-userid"></div>
+    <div class="menu-list">
+        <div class="menu-item">
+            <span>黑夜模式</span>
+            <label class="switch">
+                <input type="checkbox" id="dark-mode-toggle">
+                <span class="slider"></span>
+            </label>
+        </div>
+        <div class="menu-item" onclick="switchTab('msg')">
+            <span>消息通知</span>
+            <span style="color:#ccc;">></span>
+        </div>
+        <div class="menu-item" onclick="switchTab('about')">
+            <span>关于我们</span>
+            <span style="color:#ccc;">></span>
+        </div>
+        <div class="menu-item" onclick="clearUserInfo()">
+            <span>清除用户信息</span>
+            <span style="color:#ccc;">></span>
+        </div>
+    </div>
+</div>
+
+<!-- 消息通知页面 -->
+<div id="page-msg" class="container">
+    <div class="user-name">消息通知</div>
+    <div style="font-size:14px;color:#888;margin-top:30px;">暂无新消息</div>
+</div>
+
+<!-- 关于我们页面 -->
+<div id="page-about" class="container">
+    <div class="user-name">关于我们</div>
+    <div class="menu-list">
+        <div class="menu-item" onclick="alert('功能开发中，敬请期待！')">
+            <span>月球服务中心</span>
+            <span style="color:#ccc;">></span>
+        </div>
+        <div class="menu-item" onclick="window.open('https://github.com/jtnvxff445/My-box','_blank')">
+            <span>项目仓库</span>
+            <span style="color:#ccc;">></span>
+        </div>
+    </div>
+</div>
+
+<!-- 底部导航 -->
+<div class="bottom-nav">
+    <div class="nav-item active" onclick="switchTab('home')">首页</div>
+    <div class="nav-item" onclick="switchTab('mine')">我的</div>
+</div>
+
+<script>
+    const DATA_URL = 'https://jtnvxff445.github.io/My-box/tasks.json';
+    const homeContainer = document.getElementById('page-home');
+    const darkModeToggle = document.getElementById('dark-mode-toggle');
+
+    // 检查用户信息，仅返回状态，不自动跳转
+    function checkUserInfo(){
+        const username = localStorage.getItem('username');
+        const userid = localStorage.getItem('userid');
+        if(!username || !userid){
+            return false;
+        }
+        document.getElementById('display-username').innerText = username;
+        document.getElementById('display-userid').innerText = 'ID: ' + userid;
+        return true;
+    }
+
+    // 保存用户信息
+    function saveUserInfo(){
+        const username = document.getElementById('username-input').value.trim();
+        const userid = document.getElementById('userid-input').value.trim();
+        if(!username || !userid){
+            alert('用户名和ID不能为空');
+            return;
+        }
+        localStorage.setItem('username', username);
+        localStorage.setItem('userid', userid);
+        checkUserInfo();
+        switchTab('mine');
+    }
+
+    // 清除用户信息
+    function clearUserInfo(){
+        if(confirm('确定要清除用户信息吗？清除后需重新设置')){
+            localStorage.removeItem('username');
+            localStorage.removeItem('userid');
+            document.getElementById('username-input').value = '';
+            document.getElementById('userid-input').value = '';
+            switchTab('login');
+        }
+    }
+
+    async function fetchAndRenderTasks(){
+        try {
+            const r = await fetch(DATA_URL + '?t=' + new Date().getTime());
+            if(!r.ok) throw new Error('Network response was not ok');
+            const tasks = await r.json();
+            homeContainer.innerHTML = '';
+            if(!tasks.length){
+                homeContainer.innerHTML = '<div style="text-align:center;color:#999;margin-top:30px;">当前没有新任务</div>';
+                return;
+            }
+            tasks.forEach(t => {
+                const c = document.createElement('div');
+                c.className = 'card';
+                c.innerHTML = '<div class="card-title">' + t.title + '</div><div class="card-desc">' + (t.desc || t.content || '') + '</div>';
+                homeContainer.appendChild(c);
+            });
+        } catch(e) {
+            console.error('Fetch error:', e);
+            if(!homeContainer.innerHTML.trim()){
+                homeContainer.innerHTML = '<div style="text-align:center;color:#f00;margin-top:30px;">任务拉取失败，请检查网络</div>';
+            }
+        }
+    }
+
+    fetchAndRenderTasks();
+    setInterval(fetchAndRenderTasks, 30000);
+
+    // 核心修复：切换tab时强制校验登录状态
+    function switchTab(n){
+        // 访问敏感页面必须先登录
+        if((n === 'mine' || n === 'msg' || n === 'about') && !checkUserInfo()){
+            n = 'login';
+        }
+
+        const pages = ['page-home','page-mine','page-msg','page-about','page-login'];
+        const titles = {'home':'我的任务列表','mine':'个人中心','msg':'消息通知','about':'关于我们','login':'欢迎使用'};
+        const navItems = document.querySelectorAll('.nav-item');
+
+        pages.forEach(id => document.getElementById(id).style.display = 'none');
+        document.getElementById('page-' + n).style.display = 'block';
+        document.getElementById('header-title').innerText = titles[n];
+
+        navItems[0].classList.toggle('active', n === 'home');
+        navItems[1].classList.toggle('active', n === 'mine');
+    }
+
+    function toggleDarkMode(){
+        document.body.classList.toggle('dark-mode');
+        const isDark = document.body.classList.contains('dark-mode');
+        darkModeToggle.checked = isDark;
+        localStorage.setItem('darkMode', isDark);
+    }
+
+    darkModeToggle.addEventListener('change', toggleDarkMode);
+
+    window.onload = function(){
+        if(localStorage.getItem('darkMode') === 'true'){
+            document.body.classList.add('dark-mode');
+            darkModeToggle.checked = true;
+        }
+        // 初始化时如果未登录，默认显示登录页
+        if(!checkUserInfo()){
+            switchTab('login');
+        } else {
+            switchTab('home');
+        }
+    }
+</script>
+</body>
+  </html>
