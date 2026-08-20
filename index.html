@@ -5,223 +5,308 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
 <title>月球服务</title>
 <style>
-body{margin:0;padding:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;background:#f5f5f5;color:#333;padding-bottom:60px;transition:.3s}
-.header{background:#fff;height:50px;display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:bold;box-shadow:0 1px 3px rgba(0,0,0,.1);position:sticky;top:0;z-index:100}
-.container{padding:15px}
-.moon-clock{display:flex;align-items:center;gap:12px;margin-bottom:20px;padding:16px;background:#fff;border-radius:12px;box-shadow:0 2px 8px rgba(0,0,0,.05)}
-.moon-phase{width:40px;height:40px;border-radius:50%;background:#e0e0e0;position:relative;overflow:hidden;flex-shrink:0}
-.moon-shadow{position:absolute;top:0;left:0;width:100%;height:100%;border-radius:50%;background:#333;transition:transform .5s ease}
+:root{--primary:#007aff;--bg:#f2f2f7;--card:#fff;--text:#1c1c1e;--sub:#8e8e93;--border:rgba(60,60,67,.12);--shadow:0 2px 8px rgba(0,0,0,.04);--radius:16px}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+body{font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text","Helvetica Neue",sans-serif;background:var(--bg);color:var(--text);padding-bottom:70px;transition:background .3s,color .3s}
+
+/* === 顶部导航 === */
+.header{position:sticky;top:0;z-index:100;height:56px;display:flex;align-items:center;justify-content:space-between;padding:0 20px;background:rgba(255,255,255,.85);backdrop-filter:saturate(180%) blur(20px);-webkit-backdrop-filter:saturate(180%) blur(20px);border-bottom:1px solid var(--border);transition:background .3s,border .3s}
+.header-title{font-size:18px;font-weight:700;letter-spacing:.3px}
+.header-actions{display:flex;gap:16px;align-items:center}
+.icon-btn{width:32px;height:32px;display:flex;align-items:center;justify-content:center;border-radius:50%;cursor:pointer;transition:background .2s}
+.icon-btn:active{background:rgba(0,0,0,.06)}
+.icon-btn svg{width:22px;height:22px;fill:var(--text);transition:fill .3s}
+
+/* === 设置下拉菜单 === */
+.settings-dropdown{position:absolute;top:52px;right:16px;width:180px;background:var(--card);border-radius:12px;box-shadow:0 8px 30px rgba(0,0,0,.12);padding:6px 0;z-index:200;opacity:0;transform:translateY(-8px) scale(.96);pointer-events:none;transition:all .2s ease}
+.settings-dropdown.show{opacity:1;transform:translateY(0) scale(1);pointer-events:auto}
+.menu-row{display:flex;align-items:center;justify-content:space-between;padding:12px 16px;font-size:14px;cursor:pointer;transition:background .15s}
+.menu-row:active{background:rgba(0,0,0,.04)}
+.menu-row.danger{color:#ff3b30}
+
+/* === 通用容器 === */
+.container{padding:16px;max-width:600px;margin:0 auto}
+.page{display:none;animation:fadeUp .35s ease}
+@keyframes fadeUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+
+/* === 月相卡片 === */
+.moon-clock{display:flex;align-items:center;gap:16px;padding:20px;background:var(--card);border-radius:var(--radius);box-shadow:var(--shadow);margin-bottom:20px;transition:background .3s,box-shadow .3s}
+.moon-phase{width:48px;height:48px;border-radius:50%;background:#d1d1d6;position:relative;overflow:hidden;flex-shrink:0;box-shadow:inset 0 0 8px rgba(0,0,0,.08)}
+.moon-shadow{position:absolute;top:0;left:0;width:100%;height:100%;border-radius:50%;background:#1c1c1e;transition:transform .6s cubic-bezier(.4,0,.2,1)}
 .moon-info{flex:1;min-width:0}
-.moon-date{font-size:14px;font-weight:bold;color:#2c3e50;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.moon-desc{font-size:12px;color:#999;margin-top:2px}
-.card{background:#fff;border-radius:12px;padding:20px;margin-bottom:15px;box-shadow:0 2px 8px rgba(0,0,0,.05);display:flex;flex-direction:column}
-.card-title{font-size:18px;font-weight:bold;margin-bottom:8px;color:#2c3e50;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.card-desc{font-size:14px;color:#666;line-height:1.5;margin-bottom:12px;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
-.btn{width:100%;padding:10px;border:none;border-radius:8px;font-size:14px;color:#fff;cursor:pointer;margin-top:auto}
-.btn-primary{background:#007aff}
-.btn-success{background:#34c759;opacity:.8;cursor:default}
-.bottom-nav{position:fixed;bottom:0;left:0;width:100%;height:60px;background:#fff;border-top:1px solid #eee;display:flex;justify-content:space-around;align-items:center;z-index:100}
-.nav-item{text-align:center;font-size:12px;color:#999;flex:1;padding-top:5px;cursor:pointer;position:relative}
-.nav-item.active{color:#007aff;font-weight:bold}
-.nav-item .badge{position:absolute;top:8px;right:calc(50% - 15px);width:8px;height:8px;background:#ff3b30;border-radius:50%;display:none}
+.moon-date{font-size:15px;font-weight:600;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;transition:color .3s}
+.moon-desc{font-size:12px;color:var(--sub);margin-top:3px;transition:color .3s}
+
+/* === 任务卡片 === */
+.card{background:var(--card);border-radius:var(--radius);padding:20px;margin-bottom:14px;box-shadow:var(--shadow);display:flex;flex-direction:column;transition:background .3s,box-shadow .3s,transform .15s}
+.card:active{transform:scale(.985)}
+.card-title{font-size:17px;font-weight:600;margin-bottom:6px;color:var(--text);transition:color .3s}
+.card-desc{font-size:14px;color:var(--sub);line-height:1.55;margin-bottom:14px;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;transition:color .3s}
+.btn{width:100%;padding:12px;border:none;border-radius:10px;font-size:15px;font-weight:500;color:#fff;cursor:pointer;transition:opacity .2s,background .3s}
+.btn:active{opacity:.8}
+.btn-primary{background:var(--primary)}
+.btn-success{background:#34c759;cursor:default}
+
+/* === 底部导航 === */
+.bottom-nav{position:fixed;bottom:0;left:0;width:100%;height:64px;background:rgba(255,255,255,.88);backdrop-filter:saturate(180%) blur(20px);-webkit-backdrop-filter:saturate(180%) blur(20px);border-top:1px solid var(--border);display:flex;justify-content:space-around;align-items:center;z-index:100;transition:background .3s,border .3s}
+.nav-item{display:flex;flex-direction:column;align-items:center;gap:3px;font-size:10px;color:var(--sub);cursor:pointer;position:relative;transition:color .2s;-webkit-user-select:none;user-select:none}
+.nav-item.active{color:var(--primary);font-weight:600}
+.nav-item svg{width:24px;height:24px;fill:currentColor;transition:fill .2s}
+.nav-item .badge{position:absolute;top:-2px;right:calc(50% - 18px);width:8px;height:8px;background:#ff3b30;border-radius:50%;border:1.5px solid #fff;display:none}
 .nav-item.has-unread .badge{display:block}
-.page{display:none;text-align:center;padding-top:30px}
-.input-wrap{width:80%;margin:0 auto 15px;text-align:left}
-.input{width:100%;padding:12px;border:1px solid #ddd;border-radius:8px;font-size:16px;outline:none;box-sizing:border-box}
-.input-hint{font-size:12px;color:#999;margin-top:4px}
-.input-error{color:#ff3b30}
-.menu-item{background:#fff;padding:15px 20px;border-bottom:1px solid #f0f0f0;display:flex;justify-content:space-between;align-items:center;cursor:pointer;text-align:left}
-.menu-item:first-child{border-radius:10px 10px 0 0}
-.menu-item:last-child{border-radius:0 0 10px 10px;border-bottom:none}
-.switch{position:relative;display:inline-block;width:50px;height:26px}
+
+/* === 登录页 === */
+.login-wrap{text-align:center;padding-top:60px}
+.login-wrap h2{font-size:24px;font-weight:700;margin-bottom:40px;color:var(--text);transition:color .3s}
+.input-wrap{width:85%;margin:0 auto 20px;text-align:left}
+.input{width:100%;padding:14px 16px;border:1.5px solid var(--border);border-radius:12px;font-size:16px;outline:none;background:var(--card);color:var(--text);transition:border-color .2s,background .3s,color .3s}
+.input:focus{border-color:var(--primary)}
+.input-hint{font-size:12px;color:var(--sub);margin-top:6px;min-height:18px;transition:color .3s}
+.input-error{color:#ff3b30!important}
+
+/* === 消息列表 === */
+.msg-list{border-radius:var(--radius);overflow:hidden;box-shadow:var(--shadow)}
+.msg-item{background:var(--card);padding:16px 20px;border-bottom:1px solid var(--border);text-align:left;position:relative;cursor:pointer;transition:background .3s,border .3s}
+.msg-item:last-child{border-bottom:none}
+.msg-item.unread::before{content:"";position:absolute;top:22px;left:10px;width:8px;height:8px;background:#ff3b30;border-radius:50%}
+.msg-title{font-weight:600;font-size:15px;margin-bottom:4px;color:var(--text);transition:color .3s}
+.msg-time{font-size:12px;color:var(--sub);transition:color .3s}
+.empty-state{text-align:center;color:var(--sub);margin-top:60px;font-size:14px;transition:color .3s}
+
+/* === 开关 === */
+.switch{position:relative;display:inline-block;width:44px;height:24px;flex-shrink:0}
 .switch input{opacity:0;width:0;height:0}
-.slider{position:absolute;cursor:pointer;top:0;left:0;right:0;bottom:0;background:#ccc;transition:.4s;border-radius:34px}
-.slider:before{position:absolute;content:"";height:20px;width:20px;left:3px;bottom:3px;background:#fff;transition:.4s;border-radius:50%}
-input:checked+.slider{background:#007aff}
-input:checked+.slider:before{transform:translateX(24px)}
-.msg-item{background:#fff;padding:15px 20px;border-bottom:1px solid #f0f0f0;text-align:left;position:relative}
-.msg-item:first-child{border-radius:10px 10px 0 0}
-.msg-item:last-child{border-radius:0 0 10px 10px;border-bottom:none}
-.msg-item.unread::before{content:"";position:absolute;top:20px;left:10px;width:8px;height:8px;background:#ff3b30;border-radius:50%}
-.msg-title{font-weight:bold;margin-bottom:5px}
-.msg-time{font-size:12px;color:#999}
-.empty-state{color:#999;margin-top:30px}
-body.dark-mode{background:#1a1a1a;color:#e0e0e0}
-body.dark-mode .header,body.dark-mode .card,body.dark-mode .bottom-nav,body.dark-mode .menu-item,body.dark-mode .msg-item,body.dark-mode .moon-clock{background:#2c2c2c}
-body.dark-mode .header{box-shadow:0 1px 3px rgba(0,0,0,.5)}
-body.dark-mode .card-title,body.dark-mode .msg-title,body.dark-mode .moon-date{color:#e0e0e0}
-body.dark-mode .card-desc,body.dark-mode .msg-time,body.dark-mode .moon-desc{color:#aaa}
-body.dark-mode .bottom-nav{border-color:#444}
-body.dark-mode .input{background:#2c2c2c;border-color:#444;color:#e0e0e0}
-body.dark-mode .menu-item{border-color:#444}
-body.dark-mode .moon-phase{background:#444}
-body.dark-mode .moon-shadow{background:#1a1a1a}
+.slider{position:absolute;cursor:pointer;inset:0;background:#e9e9ea;transition:.3s;border-radius:24px}
+.slider:before{content:"";position:absolute;height:20px;width:20px;left:2px;bottom:2px;background:#fff;transition:.3s;border-radius:50%;box-shadow:0 1px 3px rgba(0,0,0,.2)}
+input:checked+.slider{background:var(--primary)}
+input:checked+.slider:before{transform:translateX(20px)}
+
+/* === 黑夜模式 === */
+body.dark-mode{--bg:#000;--card:#1c1c1e;--text:#f5f5f7;--sub:#98989d;--border:rgba(255,255,255,.08);--shadow:0 2px 8px rgba(0,0,0,.3)}
+body.dark-mode .header,body.dark-mode .bottom-nav{background:rgba(28,28,30,.85)}
+body.dark-mode .moon-phase{background:#3a3a3c}
+body.dark-mode .moon-shadow{background:#000}
+body.dark-mode .icon-btn:active{background:rgba(255,255,255,.1)}
+body.dark-mode .menu-row:active{background:rgba(255,255,255,.06)}
+body.dark-mode .settings-dropdown{box-shadow:0 8px 30px rgba(0,0,0,.4)}
+body.dark-mode .nav-item .badge{border-color:#1c1c1e}
 </style>
 </head>
 <body>
-<div class="header" id="header-title">月球服务</div>
+
+<!-- 顶部导航 -->
+<div class="header">
+  <div class="header-title" id="header-title">月球服务</div>
+  <div class="header-actions">
+    <div class="icon-btn" onclick="alert('搜索功能开发中')">
+      <svg viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27A6.47 6.47 0 0016 9.5 6.5 6.5 0 109.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>
+    </div>
+    <div class="icon-btn" id="settings-btn">
+      <svg viewBox="0 0 24 24"><path d="M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58a.49.49 0 00.12-.61l-1.92-3.32a.49.49 0 00-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54a.48.48 0 00-.48-.41h-3.84a.48.48 0 00-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96a.49.49 0 00-.59.22L2.74 8.87a.48.48 0 00.12.61l2.03 1.58c-.05.3-.09.63-.09.94s.02.64.07.94l-2.03 1.58a.49.49 0 00-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32a.49.49 0 00-.12-.61l-2.01-1.58zM12 15.6A3.6 3.6 0 1115.6 12 3.6 3.6 0 0112 15.6z"/></svg>
+    </div>
+  </div>
+</div>
+
+<!-- 设置下拉菜单 -->
+<div class="settings-dropdown" id="settings-menu">
+  <div class="menu-row">
+    <span>黑夜模式</span>
+    <label class="switch"><input type="checkbox" id="dark-toggle"><span class="slider"></span></label>
+  </div>
+  <div class="menu-row danger" onclick="clearUser()">清除本地数据</div>
+</div>
+
+<!-- 登录页 -->
 <div id="page-login" class="container page">
-<h2 style="margin-bottom:30px">欢迎接入月球服务</h2>
-<div class="input-wrap">
-<input type="text" id="username-input" class="input" placeholder="请输入用户名" maxlength="16">
-<div class="input-hint" id="username-hint">4-16位，以英文字母开头，仅含字母和数字</div>
+  <div class="login-wrap">
+    <h2>欢迎接入月球服务</h2>
+    <div class="input-wrap">
+      <input type="text" id="username-input" class="input" placeholder="请输入用户名" maxlength="16">
+      <div class="input-hint" id="username-hint">4-16位，以英文字母开头，仅含字母和数字</div>
+    </div>
+    <button class="btn btn-primary" style="width:85%" onclick="saveUser()">确认接入</button>
+  </div>
 </div>
-<button class="btn btn-primary" style="width:80%" onclick="saveUser()">确认接入</button>
-</div>
+
+<!-- 首页 -->
 <div id="page-home" class="container page">
-<div class="moon-clock">
-<div class="moon-phase"><div class="moon-shadow" id="moon-shadow"></div></div>
-<div class="moon-info">
-<div class="moon-date" id="moon-date">--</div>
-<div class="moon-desc" id="moon-desc">月相加载中...</div>
+  <div class="moon-clock">
+    <div class="moon-phase"><div class="moon-shadow" id="moon-shadow"></div></div>
+    <div class="moon-info">
+      <div class="moon-date" id="moon-date">--</div>
+      <div class="moon-desc" id="moon-desc">月相加载中...</div>
+    </div>
+  </div>
+  <div id="task-list"></div>
 </div>
-</div>
-<div id="task-list"></div>
-</div>
+
+<!-- 通讯页 -->
 <div id="page-notif" class="container page">
-<div id="notif-list"></div>
-<div id="notif-empty" class="empty-state" style="display:none">暂无通讯记录</div>
+  <div id="notif-list"></div>
+  <div id="notif-empty" class="empty-state" style="display:none">暂无通讯记录</div>
 </div>
-<div id="page-mine" class="container page">
-<h2 id="display-username" style="margin-bottom:30px"></h2>
-<div style="border-radius:10px;overflow:hidden">
-<div class="menu-item"><span>黑夜模式</span><label class="switch"><input type="checkbox" id="dark-toggle"><span class="slider"></span></label></div>
-<div class="menu-item"><span>月球通讯</span><label class="switch"><input type="checkbox" id="notif-toggle"><span class="slider"></span></label></div>
-<div class="menu-item" onclick="clearUser()"><span>清除本地数据</span><span style="color:#ccc">></span></div>
-</div>
-</div>
+
+<!-- 底部导航 -->
 <div class="bottom-nav">
-<div class="nav-item active" onclick="switchTab('home')">首页</div>
-<div class="nav-item" onclick="switchTab('notif')"><span>通讯</span><span class="badge"></span></div>
-<div class="nav-item" onclick="switchTab('mine')">我的</div>
+  <div class="nav-item active" onclick="switchTab('home')">
+    <svg viewBox="0 0 24 24"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>
+    <span>首页</span>
+  </div>
+  <div class="nav-item" onclick="switchTab('notif')">
+    <svg viewBox="0 0 24 24"><path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm0 14H5.17L4 17.17V4h16v12z"/></svg>
+    <span>通讯</span>
+    <span class="badge"></span>
+  </div>
 </div>
+
 <script>
 const DATA_URL='https://jtnvxff445.github.io/My-box/tasks.json';
 const taskListEl=document.getElementById('task-list');
 const notifListEl=document.getElementById('notif-list');
 const notifEmptyEl=document.getElementById('notif-empty');
 const darkToggle=document.getElementById('dark-toggle');
-const notifToggle=document.getElementById('notif-toggle');
-const notifNav=document.querySelectorAll('.nav-item')[1];
 const usernameInput=document.getElementById('username-input');
 const usernameHint=document.getElementById('username-hint');
 const moonShadow=document.getElementById('moon-shadow');
 const moonDateEl=document.getElementById('moon-date');
 const moonDescEl=document.getElementById('moon-desc');
+const settingsBtn=document.getElementById('settings-btn');
+const settingsMenu=document.getElementById('settings-menu');
+const notifNav=document.querySelectorAll('.nav-item')[1];
 const USERNAME_REGEX=/^[a-zA-Z][a-zA-Z0-9]{3,15}$/;
 const DYNASTIES=["夏","商","西周","东周","春秋","战国","秦","西楚","西汉","新","玄汉","东汉","魏","蜀","吴","西晋","东晋","前赵","成汉","前凉","后赵","前燕","前秦","后燕","后秦","西秦","后凉","南凉","北凉","西凉","南燕","北燕","夏","刘宋","南齐","南梁","南陈","北魏","东魏","西魏","北齐","北周","隋","唐","武周","后梁","后唐","后晋","后汉","后周","前蜀","后蜀","南吴","南唐","吴越","闽","南楚","南汉","南平","北汉","辽","北宋","西夏","金","南宋","西辽","大理","元","明"];
 const TRIGGER_HOURS=[0,6,9,15];
-// 精确月相计算（基准点：2024-01-11 11:57 UTC 新月）
 const NEW_MOON_BASE=new Date('2024-01-11T11:57:00Z').getTime();
 const SYNODIC_MONTH=29.53058885*24*60*60*1000;
+
+// 设置菜单开关
+settingsBtn.addEventListener('click',e=>{e.stopPropagation();settingsMenu.classList.toggle('show')});
+document.addEventListener('click',()=>settingsMenu.classList.remove('show'));
+settingsMenu.addEventListener('click',e=>e.stopPropagation());
+
+// 月相更新
 function updateMoonPhase(){
-const now=new Date();
-const diff=now.getTime()-NEW_MOON_BASE;
-let moonAge=(diff%SYNODIC_MONTH)/SYNODIC_MONTH*29.53058885;
-if(moonAge<0)moonAge+=29.53058885;
-let phaseName='';
-if(moonAge<1.85)phaseName='新月';
-else if(moonAge<5.53)phaseName='蛾眉月';
-else if(moonAge<9.22)phaseName='上弦月';
-else if(moonAge<12.91)phaseName='盈凸月';
-else if(moonAge<16.61)phaseName='满月';
-else if(moonAge<20.30)phaseName='亏凸月';
-else if(moonAge<23.99)phaseName='下弦月';
-else if(moonAge<27.68)phaseName='残月';
-else phaseName='晦月';
-const percent=moonAge/29.53058885;
-const offset=percent<=0.5?`translateX(${(1-percent*2)*100}%)`:`translateX(-${(percent*2-1)*100}%)`;
-moonShadow.style.transform=offset;
-const lunarDay=Math.floor(moonAge)+1;
-moonDateEl.textContent=`${now.getFullYear()}年${now.getMonth()+1}月${now.getDate()}日 · ${phaseName}`;
-moonDescEl.textContent=`月龄 ${moonAge.toFixed(1)} 天 · 朔望月第 ${lunarDay} 日`;
+  const now=new Date();
+  const diff=now.getTime()-NEW_MOON_BASE;
+  let moonAge=(diff%SYNODIC_MONTH)/SYNODIC_MONTH*29.53058885;
+  if(moonAge<0)moonAge+=29.53058885;
+  let phaseName='';
+  if(moonAge<1.85)phaseName='新月';
+  else if(moonAge<5.53)phaseName='蛾眉月';
+  else if(moonAge<9.22)phaseName='上弦月';
+  else if(moonAge<12.91)phaseName='盈凸月';
+  else if(moonAge<16.61)phaseName='满月';
+  else if(moonAge<20.30)phaseName='亏凸月';
+  else if(moonAge<23.99)phaseName='下弦月';
+  else if(moonAge<27.68)phaseName='残月';
+  else phaseName='晦月';
+  const percent=moonAge/29.53058885;
+  const offset=percent<=0.5?`translateX(${(1-percent*2)*100}%)`:`translateX(-${(percent*2-1)*100}%)`;
+  moonShadow.style.transform=offset;
+  const lunarDay=Math.floor(moonAge)+1;
+  moonDateEl.textContent=`${now.getFullYear()}年${now.getMonth()+1}月${now.getDate()}日 · ${phaseName}`;
+  moonDescEl.textContent=`月龄 ${moonAge.toFixed(1)} 天 · 朔望月第 ${lunarDay} 日`;
 }
+
+// 用户名验证
 usernameInput.addEventListener('input',()=>{
-const val=usernameInput.value.trim();
-if(!val){usernameHint.textContent='4-16位，以英文字母开头，仅含字母和数字';usernameHint.classList.remove('input-error');return;}
-if(!USERNAME_REGEX.test(val)){usernameHint.textContent='格式错误：需以字母开头，仅含字母数字，长度4-16位';usernameHint.classList.add('input-error');}
-else{usernameHint.textContent='✓ 用户名格式正确';usernameHint.classList.remove('input-error');}
+  const val=usernameInput.value.trim();
+  if(!val){usernameHint.textContent='4-16位，以英文字母开头，仅含字母和数字';usernameHint.classList.remove('input-error');return;}
+  if(!USERNAME_REGEX.test(val)){usernameHint.textContent='格式错误：需以字母开头，仅含字母数字，长度4-16位';usernameHint.classList.add('input-error');}
+  else{usernameHint.textContent='✓ 用户名格式正确';usernameHint.classList.remove('input-error');}
 });
+
 function saveUser(){
-const u=usernameInput.value.trim();
-if(!USERNAME_REGEX.test(u)){usernameHint.textContent='格式错误：需以字母开头，仅含字母数字，长度4-16位';usernameHint.classList.add('input-error');return;}
-localStorage.setItem('username',u);switchTab('home');
+  const u=usernameInput.value.trim();
+  if(!USERNAME_REGEX.test(u)){usernameHint.textContent='格式错误：需以字母开头，仅含字母数字，长度4-16位';usernameHint.classList.add('input-error');return;}
+  localStorage.setItem('username',u);switchTab('home');
 }
+
 function clearUser(){if(confirm('确定清除所有本地数据？此操作不可恢复')){localStorage.clear();location.reload();}}
 function checkUser(){return!!localStorage.getItem('username');}
 function getStatus(){return JSON.parse(localStorage.getItem('taskStatus')||'{}');}
+
 async function fetchTasks(){
-try{
-const r=await fetch(DATA_URL+'?t='+Date.now());
-if(!r.ok)throw new Error();
-const tasks=await r.json();
-const status=getStatus();
-taskListEl.innerHTML=tasks.length?'':'<div class="empty-state">暂无派遣任务</div>';
-tasks.forEach(t=>{
-const joined=!!status[t.id];
-const d=document.createElement('div');
-d.className='card';
-d.innerHTML=`<div class="card-title">${t.title}</div><div class="card-desc">${t.desc||'暂无任务描述'}</div><button class="btn ${joined?'btn-success':'btn-primary'}" onclick="claim('${t.id}',this)" ${joined?'disabled':''}>${joined?'✨ 已参与':'领取任务'}</button>`;
-taskListEl.appendChild(d);
-});
-}catch(e){taskListEl.innerHTML='<div class="empty-state" style="color:#f00">任务加载失败，请检查网络</div>';}
+  try{
+    const r=await fetch(DATA_URL+'?t='+Date.now());
+    if(!r.ok)throw new Error();
+    const tasks=await r.json();
+    const status=getStatus();
+    taskListEl.innerHTML=tasks.length?'':'<div class="empty-state">暂无派遣任务</div>';
+    tasks.forEach(t=>{
+      const joined=!!status[t.id];
+      const d=document.createElement('div');
+      d.className='card';
+      d.innerHTML=`<div class="card-title">${t.title}</div><div class="card-desc">${t.desc||'暂无任务描述'}</div><button class="btn ${joined?'btn-success':'btn-primary'}" onclick="claim('${t.id}',this)" ${joined?'disabled':''}>${joined?'✨ 已参与':'领取任务'}</button>`;
+      taskListEl.appendChild(d);
+    });
+  }catch(e){taskListEl.innerHTML='<div class="empty-state" style="color:#ff3b30">任务加载失败，请检查网络</div>';}
 }
+
 function claim(id,btn){
-if(!checkUser())return switchTab('login');
-const s=getStatus();s[id]=true;localStorage.setItem('taskStatus',JSON.stringify(s));
-btn.className='btn btn-success';btn.innerText='✨ 已参与';btn.disabled=true;
+  if(!checkUser())return switchTab('login');
+  const s=getStatus();s[id]=true;localStorage.setItem('taskStatus',JSON.stringify(s));
+  btn.className='btn btn-success';btn.innerText='✨ 已参与';btn.disabled=true;
 }
+
 function getNotifs(){return JSON.parse(localStorage.getItem('notifications')||'[]');}
 function saveNotifs(n){localStorage.setItem('notifications',JSON.stringify(n));}
+
 function checkAndPushNotif(){
-if(!notifToggle.checked)return;
-const now=new Date();const h=now.getHours();
-if(!TRIGGER_HOURS.includes(h))return;
-const pushed=JSON.parse(localStorage.getItem('pushedHours')||'[]');
-if(pushed.includes(h))return;
-const dynasty=DYNASTIES[Math.floor(Math.random()*DYNASTIES.length)];
-const notifs=getNotifs();
-notifs.unshift({id:Date.now(),title:`【${dynasty}】提醒您：任务尚未完成。`,time:now.toLocaleString('zh-CN',{hour12:false}),read:false});
-saveNotifs(notifs);
-pushed.push(h);localStorage.setItem('pushedHours',JSON.stringify(pushed));
-updateNotifBadge();
+  const enabled=localStorage.getItem('notifEnabled')!=='false';
+  if(!enabled)return;
+  const now=new Date();const h=now.getHours();
+  if(!TRIGGER_HOURS.includes(h))return;
+  const pushed=JSON.parse(localStorage.getItem('pushedHours')||'[]');
+  if(pushed.includes(h))return;
+  const dynasty=DYNASTIES[Math.floor(Math.random()*DYNASTIES.length)];
+  const notifs=getNotifs();
+  notifs.unshift({id:Date.now(),title:`【${dynasty}】提醒您：任务尚未完成。`,time:now.toLocaleString('zh-CN',{hour12:false}),read:false});
+  saveNotifs(notifs);
+  pushed.push(h);localStorage.setItem('pushedHours',JSON.stringify(pushed));
+  updateNotifBadge();
 }
+
 function renderNotifs(){
-const notifs=getNotifs();
-const sevenDaysAgo=Date.now()-7*24*60*60*1000;
-const valid=notifs.filter(n=>new Date(n.time).getTime()>sevenDaysAgo);
-if(valid.length!==notifs.length)saveNotifs(valid);
-notifListEl.innerHTML='';
-if(!valid.length){notifEmptyEl.style.display='block';return;}
-notifEmptyEl.style.display='none';
-valid.forEach(n=>{
-const d=document.createElement('div');
-d.className=`msg-item ${!n.read?'unread':''}`;
-d.innerHTML=`<div class="msg-title">${n.title}</div><div class="msg-time">${n.time}</div>`;
-d.onclick=()=>{if(!n.read){n.read=true;saveNotifs(getNotifs());d.classList.remove('unread');updateNotifBadge();}};
-notifListEl.appendChild(d);
-});
+  const notifs=getNotifs();
+  const sevenDaysAgo=Date.now()-7*24*60*60*1000;
+  const valid=notifs.filter(n=>new Date(n.time).getTime()>sevenDaysAgo);
+  if(valid.length!==notifs.length)saveNotifs(valid);
+  notifListEl.innerHTML='';
+  if(!valid.length){notifEmptyEl.style.display='block';return;}
+  notifEmptyEl.style.display='none';
+  const wrap=document.createElement('div');wrap.className='msg-list';
+  valid.forEach(n=>{
+    const d=document.createElement('div');
+    d.className=`msg-item ${!n.read?'unread':''}`;
+    d.innerHTML=`<div class="msg-title">${n.title}</div><div class="msg-time">${n.time}</div>`;
+    d.onclick=()=>{if(!n.read){n.read=true;saveNotifs(getNotifs());d.classList.remove('unread');updateNotifBadge();}};
+    wrap.appendChild(d);
+  });
+  notifListEl.appendChild(wrap);
 }
+
 function updateNotifBadge(){notifNav.classList.toggle('has-unread',getNotifs().some(n=>!n.read));}
+
 function switchTab(tab){
-if(tab!=='login'&&!checkUser())tab='login';
-document.querySelectorAll('.page').forEach(p=>p.style.display='none');
-document.getElementById('page-'+tab).style.display='block';
-document.getElementById('header-title').innerText={home:'月球服务',notif:'通讯记录',mine:'个人中心'}[tab];
-document.querySelectorAll('.nav-item').forEach((el,i)=>{el.classList.toggle('active',(i===0&&tab==='home')||(i===1&&tab==='notif')||(i===2&&tab==='mine'));});
-if(tab==='mine')document.getElementById('display-username').innerText=localStorage.getItem('username');
-if(tab==='notif')renderNotifs();
+  if(tab!=='login'&&!checkUser())tab='login';
+  document.querySelectorAll('.page').forEach(p=>p.style.display='none');
+  document.getElementById('page-'+tab).style.display='block';
+  document.getElementById('header-title').innerText={home:'月球服务',notif:'通讯记录',login:'月球服务'}[tab]||'月球服务';
+  document.querySelectorAll('.nav-item').forEach((el,i)=>{el.classList.toggle('active',(i===0&&tab==='home')||(i===1&&tab==='notif'));});
+  if(tab==='notif')renderNotifs();
 }
+
+// 黑夜模式
 darkToggle.addEventListener('change',()=>{document.body.classList.toggle('dark-mode');localStorage.setItem('darkMode',document.body.classList.contains('dark-mode'));});
-notifToggle.addEventListener('change',()=>{localStorage.setItem('notifEnabled',notifToggle.checked);});
+
 window.onload=()=>{
-if(localStorage.getItem('darkMode')==='true'){document.body.classList.add('dark-mode');darkToggle.checked=true;}
-notifToggle.checked=localStorage.getItem('notifEnabled')!=='false';
-updateMoonPhase();setInterval(updateMoonPhase,60000);
-switchTab(checkUser()?'home':'login');
-fetchTasks();checkAndPushNotif();updateNotifBadge();
-setInterval(fetchTasks,30000);
+  if(localStorage.getItem('darkMode')==='true'){document.body.classList.add('dark-mode');darkToggle.checked=true;}
+  updateMoonPhase();setInterval(updateMoonPhase,60000);
+  switchTab(checkUser()?'home':'login');
+  fetchTasks();checkAndPushNotif();updateNotifBadge();
+  setInterval(fetchTasks,30000);
 };
 </script>
 </body>
-</html>
+    </html>
